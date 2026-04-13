@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Virtual environment
+.env/
+.venv/
+venv/
+
+# VS Code settings
+.vscode/
+
+# PyTorch model weights
+*.pth
+
+# Test and result outputs
+test_results/
+
+# Data files
+data/
+
+# OS files
+.DS_Store
