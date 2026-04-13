@@ -82,7 +82,7 @@ The project uses a **Conditional GAN (cGAN)** framework combining:
 
 ### 1. Clone or navigate to the project directory
 ```bash
-cd /home/kanishk/Documents/CV_Project
+cd /path/to/CV_Project
 ```
 
 ### 2. Install dependencies
@@ -129,20 +129,22 @@ The trained generator from `main.ipynb` is what `inference.py` uses for coloriza
 Run a quick test with the provided model and example image:
 
 ```bash
+cd testing/
 python test_inference.py
 ```
 
 This will:
-- Load the trained model from `colorization_model.pth`
-- Colorize the `migrant.jpg` image
-- Save results to the `test_results/` directory
+- Load the trained model from `../main/colorization_model.pth`
+- Colorize the image from `../test_images/migrant.jpg`
+- Save results to `../test_results/`
 
 ### Command Line Inference
 
 Colorize images from the command line:
 
 ```bash
-python inference.py --model path/to/model.pth --images image1.jpg image2.png --output results/
+cd testing/
+python inference.py --model ../main/colorization_model.pth --images ../test_images/migrant.jpg --output ../test_results/
 ```
 
 #### Command Line Arguments
@@ -158,17 +160,20 @@ python inference.py --model path/to/model.pth --images image1.jpg image2.png --o
 
 #### Single Image with Default Settings
 ```bash
-python inference.py --model colorization_model.pth --images test_image.jpg
+cd testing/
+python inference.py --model ../main/colorization_model.pth --images ../test_images/your_image.jpg
 ```
 
 #### Multiple Images with Smooth Decoding
 ```bash
-python inference.py --model model.pth --images img1.jpg img2.png img3.jpeg --decode annealed --output colorized_images/
+cd testing/
+python inference.py --model ../main/colorization_model.pth --images ../test_images/*.jpg --decode annealed --output ../test_results/batch_results/
 ```
 
 #### Batch Processing with Wildcard
 ```bash
-python inference.py --model model.pth --images images/*.jpg --output batch_results/
+cd testing/
+python inference.py --model ../main/colorization_model.pth --images ../test_images/*.jpg --output ../test_results/batch_results/
 ```
 
 ### Programmatic Usage
@@ -176,19 +181,25 @@ python inference.py --model model.pth --images images/*.jpg --output batch_resul
 Use the colorization functions directly in your Python code:
 
 ```python
+from pathlib import Path
 from inference import ColorizationUNet, build_synthetic_gamut, preprocess_image, postprocess_image, argmax_decode
 import torch
+
+# Get relative paths
+project_root = Path(__file__).parent.parent  # Adjust based on your script location
+model_path = str(project_root / "main" / "colorization_model.pth")
+image_path = str(project_root / "test_images" / "migrant.jpg")
 
 # Setup
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = ColorizationUNet(num_bins=313).to(device)
-checkpoint = torch.load("colorization_model.pth", map_location=device)
+checkpoint = torch.load(model_path, map_location=device)
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
 
 # Colorize a single image
 q_ab, _ = build_synthetic_gamut()
-l_input, lab_original = preprocess_image("image.jpg", image_size=128)
+l_input, lab_original = preprocess_image(image_path, image_size=128)
 original_size = lab_original.shape[:2]
 
 with torch.no_grad():
@@ -198,43 +209,48 @@ with torch.no_grad():
 colorized_rgb = postprocess_image(l_input, ab_pred, original_size)
 ```
 
-See `example_usage.py` for complete programmatic examples.
+See `testing/example_usage.py` for complete programmatic examples.
 
 ## 📁 Project Structure
 
 ```
 CV_Project/
-├── README.md                      # Project documentation (this file)
-├── README_inference.md            # Inference-specific documentation
-├── main.ipynb                     # Training notebook (GAN-based adversarial training)
-├── inference.py                   # Inference script (generator only)
-├── example_usage.py               # Programmatic usage examples
-├── test_inference.py              # Quick test script
-├── colorization_model.pth         # Trained generator checkpoint
-├── colorization_discriminator.pth # Trained discriminator checkpoint (for reference)
-├── migrant.jpg                    # Example test image
-├── test_results/                  # Output directory for test results
-└── data/
-    └── stl10_binary/              # STL-10 dataset (used for training)
-        ├── class_names.txt
-        └── fold_indices.txt
+├── README.md                      # Main project documentation
+├── data/
+│   └── stl10_binary/              # STL-10 dataset (used for training)
+│       ├── class_names.txt
+│       └── fold_indices.txt
+├── main/                          # Training & model storage
+│   ├── main.ipynb                 # Training notebook (GAN-based adversarial training)
+│   ├── colorization_model.pth     # Trained generator checkpoint
+│   └── colorization_discriminator.pth # Trained discriminator checkpoint
+├── testing/                       # Inference scripts
+│   ├── inference.py               # Main inference script (generator only)
+│   ├── test_inference.py          # Quick test script
+│   ├── example_usage.py           # Programmatic usage examples
+│   └── README_inference.md        # Inference-specific documentation
+├── test_images/                   # Test images
+│   └── migrant.jpg                # Example test image
+└── test_results/                  # Output directory for colorization results
+    └── (generated outputs)
 ```
 
-### File Descriptions
+### Directory Descriptions
 
-- **main.ipynb**: Complete GAN-based training pipeline
-  - Loads STL-10 dataset
-  - Defines generator (U-Net) and discriminator
-  - Implements adversarial training loop
-  - Saves trained generator and discriminator checkpoints
+- **main/**: Contains training artifacts and models
+  - `main.ipynb`: Complete GAN-based training pipeline with generator and discriminator
+  - `colorization_model.pth`: Pre-trained generator (U-Net for colorization)
+  - `colorization_discriminator.pth`: Pre-trained discriminator (for reference)
 
-- **inference.py**: Inference-only script (uses trained generator)
-  - Loads the pre-trained generator model
-  - No discriminator needed (only used during training)
-  - Supports both argmax and annealed decoding
-  - Generates colorized images and comparison plots
+- **testing/**: All inference and testing scripts
+  - Uses relative paths to access model and images
+  - Import paths are simplified for local module usage
 
-- **example_usage.py**: Programmatic examples for integration
+- **test_images/**: Sample images for testing
+  - `migrant.jpg`: Example test image for quick validation
+
+- **test_results/**: Generated colorization outputs
+  - Created automatically when running inference
 
 ## 📊 Output Files
 
