@@ -19,9 +19,15 @@ The system treats colorization as a pixel-wise prediction problem, leveraging th
 
 ## 🏗️ Technical Approach
 
-### GAN-Based Adversarial Training
+### GAN-Based Adversarial Training with Unlabeled Data
 
-The project uses a **Conditional GAN (cGAN)** framework combining:
+The project uses a **Conditional GAN (cGAN)** framework trained on **100,000 unlabeled STL-10 images**:
+
+**Why Unlabeled Data?**
+- Classification labels are irrelevant for unsupervised colorization
+- **10x larger dataset** compared to using only labeled splits (100k vs 13k images)
+- Broader distribution of content (includes animals, vehicles beyond the main 10 classes)
+- Better generalization and color diversity in predictions
 
 **Generator (U-Net Backbone):**
 - Encoder-Decoder structure with skip connections
@@ -37,10 +43,10 @@ The project uses a **Conditional GAN (cGAN)** framework combining:
 - Uses LeakyReLU and batch normalization
 
 **Combined Training Strategy:**
-1. **Cross-Entropy Loss**: Preserves color ambiguity awareness
+1. **Cross-Entropy Loss**: Preserves color ambiguity awareness from data distribution
 2. **L1 Reconstruction Loss**: Encourages pixel-accurate color matching (weight: 100)
-3. **Adversarial Loss**: Discriminator enforces realistic colorization (weight: 1.0)
-4. **LSGAN Formulation**: Ensures stable, convergent training
+3. **Adversarial Loss**: Discriminator enforces realistic, vibrant colorization (weight: 1.0)
+4. **LSGAN Formulation**: Ensures stable, convergent training without mode collapse
 
 ### Advanced Components
 
@@ -105,7 +111,10 @@ jupyter notebook main.ipynb
 ```
 
 **Training Overview:**
-1. Loads STL-10 dataset (5000 training images)
+1. **Unlabeled Dataset**: Loads STL-10 **unlabeled split (100,000 images)** instead of just labeled data
+   - Contains broader distribution (bears, rabbits, trains, buses, etc.)
+   - Perfect for unsupervised colorization task (labels not needed)
+   - 10x more training data than labeled-only approach
 2. Converts images to Lab color space
 3. Defines generator (U-Net) and patch-based discriminator
 4. Runs adversarial training for 15 epochs:
@@ -114,11 +123,18 @@ jupyter notebook main.ipynb
 5. Saves trained `colorization_model.pth` (generator) and `colorization_discriminator.pth` (discriminator)
 
 **Training Configuration:**
-- Batch size: 8
+- **Dataset**: STL-10 Unlabeled (100,000 images) + Test split for validation (8,000 images)
+- Batch size: 32
 - Learning rate: 2e-4
 - Epochs: 15
 - Loss weights: CE + 100×L1 + 1×Adversarial
 - Optimizer: Adam with betas (0.5, 0.999)
+
+**Why Unlabeled Data?**
+- Classification labels are irrelevant for colorization
+- Unsupervised learning task: predict colors from luminance only
+- Larger, more diverse dataset improves model generalization
+- Broader distribution enables better color prediction for varied content
 
 The trained generator from `main.ipynb` is what `inference.py` uses for colorization.
 

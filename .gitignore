@@ -2,26 +2,67 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Jupyter Notebook checkpoints
+# Jupyter Notebook
 .ipynb_checkpoints/
+*.ipynb_checkpoints
 
 # Virtual environment
 .env/
 .venv/
 venv/
+ENV/
+env.bak/
+venv.bak/
 
-# VS Code settings
+# IDE settings
 .vscode/
+.idea/
+*.swp
+*.swo
 
-# PyTorch model weights
+# PyTorch model weights and checkpoints
 *.pth
+*.pt
+*.pth.tar
+colorization_model.pth
+colorization_discriminator.pth
 
-# Test and result outputs
-test_results/
-
-# Data files
+# Datasets
 data/
+data/stl10_binary/
+stl10_binary/
+
+# Training outputs and logs
+test_results/
+test_results/batch_results/
+colorized_output.jpg
+*.log
+training_logs/
+
+# Temporary and cache files
+*.tmp
+.cache/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
 
 # OS files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project-specific
+*.csv
+output/
+results/
+checkpoint_backup/
